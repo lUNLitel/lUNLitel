@@ -12,46 +12,69 @@
     justify-content: center;
     align-items: center;
     background: #000;
+    overflow: hidden;
+    position: relative;
   }
   video {
     width: 80%;
     max-width: 900px;
     cursor: pointer;
   }
+  .overlay-text {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    text-shadow: 0 0 5px #000;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
 
 <video id="videoPlayer" autoplay muted loop>
-  <source src="cleanEnv_01_v010001-0250.mp4" type="video/mp4">
+  <source src="carEnv_01_v010001-0250.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
+<div class="overlay-text">Click anywhere to switch environment</div>
+
 <script>
 const videos = [
-  'cleanEnv_01_v010001-0250.mp4',
-  'carEnv_01_v010001-0250.mp4'
+  'carEnv_01_v010001-0250.mp4',
+  'cleanEnv_01_v010001-0250.mp4'
 ];
 let currentIndex = 0;
 const video = document.getElementById('videoPlayer');
 
+let switchRequested = false; // flag to know if user clicked
+
 // Loop the same video if not clicked
 video.addEventListener('ended', () => {
-  video.play();
+  if (switchRequested) {
+    // Move to next video
+    currentIndex = (currentIndex + 1) % videos.length;
+    video.src = videos[currentIndex];
+    video.playbackRate = 1;
+    video.play();
+    switchRequested = false;
+  } else {
+    video.play();
+  }
 });
 
-// On click: speed up logarithmically, then cut to next
+// On click: start speeding up
 video.addEventListener('click', () => {
-  let speed = 1;
+  switchRequested = true; // mark that user wants to switch
+  let speed = video.playbackRate;
   const interval = setInterval(() => {
-    speed *= 1.1;
+    speed *= 1.2; // faster acceleration
     video.playbackRate = speed;
-    if (speed >= 3) {
+    if (speed >= 5) { // max speed so it doesn't go crazy
       clearInterval(interval);
-      currentIndex = (currentIndex + 1) % videos.length;
-      video.src = videos[currentIndex];
-      video.playbackRate = 1;
-      video.play();
     }
   }, 100);
 });
